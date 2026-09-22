@@ -1,0 +1,8 @@
+# Not the venv's actual dependency set -- jopsis/mcp-server-oci is installed
+# straight from git (unpinned) into ~/.envs/oci-mcp/, per README.md. This
+# file exists to track the ONE pin that install needs a second, corrective
+# step for: jopsis's pyproject pulls `mcp @ git+main`, whose fastmcp module
+# periodically gets restructured out from under it (see
+# docs/interactions/oci-mcp.md's Gotchas). `pip install --force-reinstall
+# --no-deps -r this-file` re-pins it after the unpinned install.
+mcp==1.27.2

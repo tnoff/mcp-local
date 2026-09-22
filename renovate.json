@@ -5,7 +5,7 @@
     "github>tnoff/github-workflows//renovate/default-github",
     "github>tnoff/github-workflows//renovate/no-automerge"
   ],
-  "enabledManagers": ["dockerfile", "github-actions", "custom.regex"],
+  "enabledManagers": ["dockerfile", "github-actions", "pip_requirements", "custom.regex"],
   "customManagers": [
     {
       "description": "images.json's pinned public MCP images -- registry/repo:tag pairs with no Dockerfile of their own.",
