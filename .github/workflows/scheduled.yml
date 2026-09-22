@@ -1,0 +1,29 @@
+name: Scheduled
+
+# Weekly Renovate + branch-cleanup, same reusable workflows every other
+# GitHub-canonical repo uses (renovate.yml's own header comment suggests this
+# exact slot as its usage example). Nothing else scheduled here -- this repo
+# has no docs corpus to sweep for staleness.
+
+on:
+  schedule:
+    - cron: '10 3 * * 6'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  renovate:
+    name: Renovate
+    uses: tnoff/github-workflows/.github/workflows/renovate.yml@387bcb8774f6d5c75d7e9ea35003ed1f35ebf7a4
+    secrets:
+      app_client_id: ${{ secrets.CI_APP_CLIENT_ID }}
+      app_private_key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+
+  branch-cleanup:
+    name: Branch cleanup
+    permissions:
+      contents: write
+      pull-requests: read
+    uses: tnoff/github-workflows/.github/workflows/branch-cleanup.yml@387bcb8774f6d5c75d7e9ea35003ed1f35ebf7a4
