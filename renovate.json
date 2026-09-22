@@ -26,6 +26,17 @@
       "datasourceTemplate": "git-refs",
       "depNameTemplate": "https://github.com/Coderrob/backstage-mcp-server",
       "currentValueTemplate": "main"
+    },
+    {
+      "description": "oci-mcp/Dockerfile's upstream pin -- same shape as backstage-mcp-server's above, upstream ships no releases either.",
+      "customType": "regex",
+      "fileMatch": ["^oci-mcp/Dockerfile$"],
+      "matchStrings": [
+        "ARG MCP_SERVER_OCI_REF=(?<currentDigest>[a-f0-9]{40})"
+      ],
+      "datasourceTemplate": "git-refs",
+      "depNameTemplate": "https://github.com/jopsis/mcp-server-oci",
+      "currentValueTemplate": "main"
     }
   ]
 }

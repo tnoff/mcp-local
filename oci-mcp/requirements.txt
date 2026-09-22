@@ -1,8 +1,15 @@
-# Not the venv's actual dependency set -- jopsis/mcp-server-oci is installed
-# straight from git (unpinned) into ~/.envs/oci-mcp/, per README.md. This
-# file exists to track the ONE pin that install needs a second, corrective
-# step for: jopsis's pyproject pulls `mcp @ git+main`, whose fastmcp module
-# periodically gets restructured out from under it (see
-# docs/interactions/oci-mcp.md's Gotchas). `pip install --force-reinstall
-# --no-deps -r this-file` re-pins it after the unpinned install.
+# jopsis/mcp-server-oci's own pyproject pulls `mcp @ git+main` unpinned,
+# which is periodically broken outright -- verified 2026-09-21: pip couldn't
+# even resolve it (an unpublished mcp-types dev snapshot), not just the
+# later fastmcp ModuleNotFoundError docs/interactions/oci-mcp.md documents.
+# So the Dockerfile installs the package itself with --no-deps and every
+# real dependency is pinned here instead, byte-for-byte what pip resolved
+# for a from-scratch install on 2026-09-21 (mcp itself corrected to the
+# same 1.27.2 release the venv install pins).
+oci==2.186.0
+fastapi==0.141.1
+uvicorn==0.53.0
+click==8.5.0
+pydantic==2.13.5
+loguru==0.7.3
 mcp==1.27.2
