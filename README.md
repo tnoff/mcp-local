@@ -72,16 +72,16 @@ region=<same>
 key_file=/home/tnorth/.oci/mcp_readonly_api_key.pem
 ```
 
-`~/.claude.json` entry:
+Register it with `claude mcp add`, not by hand-editing `~/.claude.json` —
+run this from a plain terminal with Claude Code closed, since the running
+app rewrites that file live and only reads `mcpServers` back in at
+startup:
 
-```json
-"oci": {
-  "command": "docker",
-  "args": ["run", "-i", "--rm",
-           "-e", "HOME=/home/tnorth",
-           "-v", "/home/tnorth/.mcp-local/oci-mcp:/home/tnorth/.oci:ro",
-           "oci-mcp:local", "--profile", "MCP_READONLY"]
-}
+```bash
+claude mcp add --scope user oci -- docker run -i --rm \
+  -e HOME=/home/tnorth \
+  -v /home/tnorth/.mcp-local/oci-mcp:/home/tnorth/.oci:ro \
+  oci-mcp:local --profile MCP_READONLY
 ```
 
 `-e HOME=/home/tnorth` is load-bearing: the image runs as root, whose
