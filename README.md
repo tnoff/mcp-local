@@ -26,27 +26,29 @@ restart Claude Code, not an automated rollout.
 
 ## Staying up to date after a Renovate PR merges
 
-`.github/workflows/build-push.yml` builds and pushes `kubernetes-mcp-oci`,
-`backstage-mcp-server` and `oci-mcp` to a public OCIR repo on every merge to
-`main` (tagged `:latest` only — see the workflow's own comments for why).
-Nothing builds `images.json`'s two pulled-as-is images (`github`, `grafana`);
-a Renovate PR bumping one of those just updates a pinned version string.
-
-Either way, nothing on the laptop picks up a merge automatically. Run
-[`scripts/sync-images.sh`](scripts/sync-images.sh) by hand to pull everything
-current:
+Nothing here is built or deployed by CI, and nothing on the laptop picks up
+a merge automatically — a merge just changes what's checked into `main`.
+Run [`scripts/sync-images.sh`](scripts/sync-images.sh) by hand to catch up:
 
 ```bash
 scripts/sync-images.sh
 ```
 
-It pulls all five images and retags the three built ones as `<name>:local`
-— matching what `~/.claude.json` already references, so nothing about
-Claude Code's config needs to change for those three, ever. For `github`/
-`grafana` it also prints the `claude mcp add` command to run (with Claude
-Code closed) if the pinned tag it just pulled is newer than what's
-registered — it doesn't edit `~/.claude.json` itself, same reasoning as
-every wire-up in this doc.
+It `git pull`s this checkout first, then `docker build`s `kubernetes-mcp-oci`,
+`backstage-mcp-server` and `oci-mcp` straight from the (now current)
+Dockerfiles and tags them `<name>:local` — exactly what `~/.claude.json`
+already references, so nothing about Claude Code's config ever needs to
+change for those three. A registry briefly sat in this loop (build in CI,
+push to a public OCIR repo, pull here) and was removed —
+`docs/projects/mcp-local-registry.md` has the reasoning, short version: these
+build in well under a minute, this laptop is the only consumer, and a
+registry doesn't reduce the "remember to run this script" step either way,
+it only relocates where the build happens.
+
+For `images.json`'s two pulled-as-is images (`github`, `grafana`) the script
+pulls whatever's currently pinned and prints the `claude mcp add` command to
+run (with Claude Code closed) if that's newer than what's registered — same
+"don't touch `~/.claude.json` itself" reasoning as every wire-up in this doc.
 
 Either way, fully restart Claude Code afterward — MCP config and images are
 only picked up at startup.

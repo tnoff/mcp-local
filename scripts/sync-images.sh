@@ -1,15 +1,22 @@
 #!/usr/bin/env bash
 #
-# Pull every locally-run MCP's current image. Run by hand, whenever --
-# nothing in this repo triggers it automatically.
+# Rebuild/pull every locally-run MCP's current image. Run by hand, whenever
+# -- nothing in this repo triggers it automatically.
+#
+# git pulls this checkout first so a merged Renovate bump (a Dockerfile FROM
+# line, a git-refs pin, an images.json tag) actually gets picked up --
+# otherwise this would happily rebuild whatever was checked out days ago.
 #
 # The five images split into two groups that need different treatment:
 #
-#   kubernetes-mcp-oci, backstage-mcp-server, oci-mcp -- built by
-#   build-push.yml and pushed to OCIR under a single moving :latest tag.
-#   ~/.claude.json already points at a stable LOCAL tag (<name>:local), so
-#   pulling + retagging here is the whole story -- nothing in Claude Code's
-#   config ever needs to change for these three.
+#   kubernetes-mcp-oci, backstage-mcp-server, oci-mcp -- built HERE, from
+#   this checkout's own Dockerfiles, tagged <name>:local -- exactly what
+#   ~/.claude.json already references, so nothing about Claude Code's
+#   config ever needs to change for these three. Deliberately no registry
+#   in this loop: see docs/projects/mcp-local-registry.md for why one
+#   existed briefly and was removed -- these build in well under a minute,
+#   and a registry only relocates WHERE the build runs, not whether someone
+#   has to remember to run this script after a merge.
 #
 #   github, grafana -- pulled as-is from their public upstream registries,
 #   version-PINNED (not :latest) in images.json. Re-pulling the same pin
@@ -25,22 +32,17 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OCI_REGISTRY="iad.ocir.io"
-OCI_NAMESPACE="tnoff"
+cd "${REPO_ROOT}"
 
+echo "== Pulling latest from origin/main =="
+git pull --ff-only origin main
+
+echo
 echo "== Built locally: kubernetes-mcp-oci, backstage-mcp-server, oci-mcp =="
-for pair in \
-  "kubernetes-mcp-oci=mcp-local-kubernetes-mcp-oci" \
-  "backstage-mcp-server=mcp-local-backstage-mcp-server" \
-  "oci-mcp=mcp-local-oci-mcp"; do
-  local_name="${pair%%=*}"
-  ocir_repo="${pair##*=}"
-  ref="${OCI_REGISTRY}/${OCI_NAMESPACE}/${ocir_repo}:latest"
+for name in kubernetes-mcp-oci backstage-mcp-server oci-mcp; do
   echo
-  echo "-- ${local_name} --"
-  docker pull "${ref}"
-  docker tag "${ref}" "${local_name}:local"
-  echo "   tagged ${local_name}:local"
+  echo "-- ${name} --"
+  docker build -t "${name}:local" "${name}/"
 done
 
 echo
