@@ -24,21 +24,29 @@ restart Claude Code, not an automated rollout.
 | `images.json` | Pinned public images with no local build: `github-mcp-server`, `mcp-grafana`. Not `gitlab-mcp` — that MCP is retired (see the docs page), and the entry is deliberately absent so Renovate never proposes reviving it. |
 | `oci-mcp/Dockerfile` | `oci-mcp:local` — builds [jopsis/mcp-server-oci](https://github.com/jopsis/mcp-server-oci) from source at a pinned commit (no upstream image, no releases). Replaces the `~/.envs/oci-mcp/` venv install `oci-mcp.md` documents — same underlying package, containerized so there's no laptop-wide pip install to maintain. `requirements.txt` pins every real runtime dependency explicitly: the package's own `mcp @ git+main` pin is not just occasionally stale but can be flatly unresolvable (hit this 2026-09-21 building the image — pip couldn't find a distribution for the dev snapshot upstream's HEAD demanded), so the Dockerfile installs the package with `--no-deps` and lets nothing depend on what upstream's git tip currently resolves to. |
 
-## Rebuilding after a Renovate PR merges
+## Staying up to date after a Renovate PR merges
+
+`.github/workflows/build-push.yml` builds and pushes `kubernetes-mcp-oci`,
+`backstage-mcp-server` and `oci-mcp` to a public OCIR repo on every merge to
+`main` (tagged `:latest` only — see the workflow's own comments for why).
+Nothing builds `images.json`'s two pulled-as-is images (`github`, `grafana`);
+a Renovate PR bumping one of those just updates a pinned version string.
+
+Either way, nothing on the laptop picks up a merge automatically. Run
+[`scripts/sync-images.sh`](scripts/sync-images.sh) by hand to pull everything
+current:
 
 ```bash
-# kubernetes-mcp-oci
-docker build -t kubernetes-mcp-oci:local kubernetes-mcp-oci/
-
-# backstage-mcp-server
-docker build -t backstage-mcp-server:local backstage-mcp-server/
-
-# oci-mcp
-docker build -t oci-mcp:local oci-mcp/
+scripts/sync-images.sh
 ```
 
-For an `images.json` bump, update the corresponding tag in
-`~/.claude.json`'s `mcpServers` entry and `docker pull` the new tag.
+It pulls all five images and retags the three built ones as `<name>:local`
+— matching what `~/.claude.json` already references, so nothing about
+Claude Code's config needs to change for those three, ever. For `github`/
+`grafana` it also prints the `claude mcp add` command to run (with Claude
+Code closed) if the pinned tag it just pulled is newer than what's
+registered — it doesn't edit `~/.claude.json` itself, same reasoning as
+every wire-up in this doc.
 
 Either way, fully restart Claude Code afterward — MCP config and images are
 only picked up at startup.
