@@ -55,7 +55,7 @@ if [ -f "${MCP_LOCAL_DIR}/grafana/.env" ]; then
     --env-file "${MCP_LOCAL_DIR}/grafana/.env" \
     "${GRAFANA_REF}" -t stdio
 else
-  skip grafana "no ${MCP_LOCAL_DIR}/grafana/.env -- see docs/interactions/local-mcp-containers.md"
+  skip grafana "no ${MCP_LOCAL_DIR}/grafana/.env -- see README.md's Credentials for each MCP section"
 fi
 
 if [ -f "${MCP_LOCAL_DIR}/kubernetes/kubeconfig" ]; then
@@ -65,7 +65,7 @@ if [ -f "${MCP_LOCAL_DIR}/kubernetes/kubeconfig" ]; then
     -v "${MCP_LOCAL_DIR}/kubernetes:/kube:ro" \
     kubernetes-mcp-oci:local --read-only
 else
-  skip kubernetes "no ${MCP_LOCAL_DIR}/kubernetes/kubeconfig -- see docs/interactions/local-mcp-containers.md"
+  skip kubernetes "no ${MCP_LOCAL_DIR}/kubernetes/kubeconfig -- see README.md's Credentials for each MCP section"
 fi
 
 if [ -f "${MCP_LOCAL_DIR}/oci-mcp/config" ] && [ -f "${MCP_LOCAL_DIR}/oci-mcp/mcp_readonly_api_key.pem" ]; then
@@ -74,7 +74,7 @@ if [ -f "${MCP_LOCAL_DIR}/oci-mcp/config" ] && [ -f "${MCP_LOCAL_DIR}/oci-mcp/mc
     -v "${MCP_LOCAL_DIR}/oci-mcp:/home/tnorth/.oci:ro" \
     oci-mcp:local --profile MCP_READONLY
 else
-  skip oci "no ${MCP_LOCAL_DIR}/oci-mcp/{config,mcp_readonly_api_key.pem} -- see README.md's oci-mcp credentials section"
+  skip oci "no ${MCP_LOCAL_DIR}/oci-mcp/{config,mcp_readonly_api_key.pem} -- see README.md's Credentials for each MCP section"
 fi
 
 if [ -f "${MCP_LOCAL_DIR}/github/.env" ]; then
@@ -83,7 +83,7 @@ if [ -f "${MCP_LOCAL_DIR}/github/.env" ]; then
     --env-file "${MCP_LOCAL_DIR}/github/.env" \
     "${GITHUB_REF}"
 else
-  skip github "no ${MCP_LOCAL_DIR}/github/.env -- see docs/projects/github-mcp-local.md"
+  skip github "no ${MCP_LOCAL_DIR}/github/.env -- see README.md's Credentials for each MCP section"
 fi
 
 if [ -f "${MCP_LOCAL_DIR}/backstage/.env" ]; then
@@ -91,7 +91,7 @@ if [ -f "${MCP_LOCAL_DIR}/backstage/.env" ]; then
     --env-file "${MCP_LOCAL_DIR}/backstage/.env" \
     backstage-mcp-server:local
 else
-  skip backstage "no ${MCP_LOCAL_DIR}/backstage/.env"
+  skip backstage "no ${MCP_LOCAL_DIR}/backstage/.env -- see README.md's Credentials for each MCP section"
 fi
 
 echo
