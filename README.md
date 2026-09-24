@@ -53,6 +53,28 @@ run (with Claude Code closed) if that's newer than what's registered — same
 Either way, fully restart Claude Code afterward — MCP config and images are
 only picked up at startup.
 
+## Registering everything with Claude Code
+
+[`scripts/register-mcps.sh`](scripts/register-mcps.sh) runs `sync-images.sh`
+first, then `claude mcp add`s all five — first-time setup on a new laptop, or
+any time you want every entry re-pointed at what's actually built/pulled
+right now:
+
+```bash
+scripts/register-mcps.sh
+```
+
+Unlike `sync-images.sh`, this one **does** call `claude mcp add`/`remove`
+itself — that's its entire job, not a side effect it's careful to avoid. It
+still must run with Claude Code closed, same reasoning as always: the
+running app rewrites `~/.claude.json` live.
+
+Credential files under `~/.mcp-local/<mcp>/` are never created by this
+script — same as everywhere else in this repo, that's a manual, user-run
+step. An MCP whose credential file doesn't exist yet is skipped with a
+message pointing at where to set it up, not registered broken. `gitlab` is
+never registered — it's retired.
+
 ## oci-mcp credentials
 
 Unlike `kubernetes-mcp-oci` (which needs the operator's own `DEFAULT`
