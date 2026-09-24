@@ -9,7 +9,7 @@
 # distribution for the dev snapshot it demanded. requirements.txt pins every
 # real dependency (mcp included) to a version confirmed to work, so the
 # build never depends on what upstream's git HEAD currently resolves to.
-FROM python:3.12-slim
+FROM python:3.14-slim
 RUN apt-get update && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 ARG MCP_SERVER_OCI_REF=1b5e055ad30882838c7923e1be17019fd3355e3e
