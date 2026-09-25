@@ -19,7 +19,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MCP_LOCAL_DIR="/home/tnorth/.mcp-local"
+MCP_LOCAL_DIR="${HOME}/.mcp-local"
 
 if ! command -v claude >/dev/null 2>&1; then
   echo "claude CLI not found on PATH." >&2
@@ -60,8 +60,8 @@ fi
 
 if [ -f "${MCP_LOCAL_DIR}/kubernetes/kubeconfig" ]; then
   register kubernetes docker run -i --rm --network host \
-    -e HOME=/home/tnorth -e KUBECONFIG=/kube/kubeconfig \
-    -v /home/tnorth/.oci:/home/tnorth/.oci:ro \
+    -e HOME="${HOME}" -e KUBECONFIG=/kube/kubeconfig \
+    -v "${HOME}/.oci:${HOME}/.oci:ro" \
     -v "${MCP_LOCAL_DIR}/kubernetes:/kube:ro" \
     kubernetes-mcp-oci:local --read-only
 else
@@ -70,8 +70,8 @@ fi
 
 if [ -f "${MCP_LOCAL_DIR}/oci-mcp/config" ] && [ -f "${MCP_LOCAL_DIR}/oci-mcp/mcp_readonly_api_key.pem" ]; then
   register oci docker run -i --rm \
-    -e HOME=/home/tnorth \
-    -v "${MCP_LOCAL_DIR}/oci-mcp:/home/tnorth/.oci:ro" \
+    -e HOME="${HOME}" \
+    -v "${MCP_LOCAL_DIR}/oci-mcp:${HOME}/.oci:ro" \
     oci-mcp:local --profile MCP_READONLY
 else
   skip oci "no ${MCP_LOCAL_DIR}/oci-mcp/{config,mcp_readonly_api_key.pem} -- see README.md's Credentials for each MCP section"

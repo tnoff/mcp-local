@@ -146,7 +146,7 @@ Two files under `~/.mcp-local/kubernetes/` — `kubeconfig` and the
 `exec` block runs `oci ce cluster generate-token` inside the container on
 every connection, so there's nothing to rotate; auth is always current. That
 means this is also the one MCP that mounts all of `~/.oci` read-only
-(`-v /home/tnorth/.oci:/home/tnorth/.oci:ro`, `-e HOME=/home/tnorth`) rather
+(`-v $HOME/.oci:$HOME/.oci:ro`, `-e HOME=$HOME`) rather
 than a scoped copy — the exec-plugin authenticates as the operator's own
 `DEFAULT` profile, the same identity the bastion keepalive uses, and there's
 no narrower credential for that identity to scope down to. Full kubeconfig
@@ -178,7 +178,7 @@ user=<same as the MCP_READONLY profile in ~/.oci/config today>
 fingerprint=<same>
 tenancy=<same>
 region=<same>
-key_file=/home/tnorth/.oci/mcp_readonly_api_key.pem
+key_file=<your home dir, e.g. /home/you>/.oci/mcp_readonly_api_key.pem
 ```
 
 `terraform-admin` provisions the underlying `mcp-readonly-bot` IAM user and
@@ -197,12 +197,12 @@ terminal with Claude Code closed:
 
 ```bash
 claude mcp add --scope user oci -- docker run -i --rm \
-  -e HOME=/home/tnorth \
-  -v /home/tnorth/.mcp-local/oci-mcp:/home/tnorth/.oci:ro \
+  -e HOME=$HOME \
+  -v $HOME/.mcp-local/oci-mcp:$HOME/.oci:ro \
   oci-mcp:local --profile MCP_READONLY
 ```
 
-`-e HOME=/home/tnorth` is load-bearing there: the image runs as root, whose
+`-e HOME=$HOME` is load-bearing there: the image runs as root, whose
 default `$HOME` is `/root`, and `oci.config.from_file()` looks under
 `$HOME/.oci/config`. Verified 2026-09-21 that the image itself starts and
 reaches `oci.config.from_file()` correctly (it fails loudly on a missing
