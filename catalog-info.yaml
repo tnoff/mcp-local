@@ -4,9 +4,7 @@
 #
 # github.com/project-slug is DERIVED by the portal's
 # AnnotateScmSlugEntityProcessor from the location this file was fetched from.
-# No techdocs-ref: there's no mkdocs.yml/docs/ tree here, just a README, and
-# the annotation would assert a target that doesn't exist. Same reasoning as
-# every other repo here without one; add it if that ever changes.
+# techdocs-ref is set below now that mkdocs.yml + docs/ exist.
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
@@ -16,6 +14,8 @@ metadata:
     for the ones with no upstream image, pinned image refs for the ones that pull
     as-is, and the scripts that build/pull and register all of them with Claude
     Code. Runs on the workstation only -- nothing here is deployed to the cluster.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
 spec:
   type: library
   owner: group:default/admin

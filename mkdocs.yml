@@ -1,0 +1,8 @@
+site_name: 'mcp-local'
+site_description: 'Registry of locally-run MCP server configs (Dockerfiles + pinned images) for Claude Code'
+
+nav:
+  - Home: README.md
+
+plugins:
+  - techdocs-core
