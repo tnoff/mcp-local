@@ -87,7 +87,7 @@ else
 fi
 
 if [ -f "${MCP_LOCAL_DIR}/backstage/.env" ]; then
-  register backstage docker run -i --rm \
+  register backstage docker run -i --rm --network host \
     --env-file "${MCP_LOCAL_DIR}/backstage/.env" \
     backstage-mcp-server:local
 else

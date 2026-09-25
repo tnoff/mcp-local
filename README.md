@@ -126,10 +126,18 @@ BACKSTAGE_TOKEN=<external-access token>
 ```
 
 `BACKSTAGE_URL` assumes a `kubectl port-forward` to the in-cluster Backstage
-service on `:7007`. The token has to be accepted by the target Backstage
-deployment's `backend.auth.externalAccess` config (a static token, or a JWT
-off a configured JWKS entry) — this repository doesn't mint it, generate one
-against your own instance.
+service on `:7007` — a one-off the operator runs by hand, not wired into the
+bastion keepalive's `PORT_FORWARD_N` list the way `grafana`/`kubernetes` are
+(`docs/interactions/cluster-access.md`). The token has to be accepted by the
+target Backstage deployment's `backend.auth.externalAccess` config (a static
+token, or a JWT off a configured JWKS entry) — this repository doesn't mint
+it, generate one against your own instance.
+
+**`--network host` is required**, same reason as `grafana`/`kubernetes`: a
+bridged container's own `localhost` is not the host's, so `BACKSTAGE_URL`'s
+`localhost:7007` would otherwise try to reach the *container itself*. Caught
+2026-09-25 — the registered entry had been missing it since this MCP's very
+first setup; `register-mcps.sh` includes it now.
 
 ### kubernetes
 
