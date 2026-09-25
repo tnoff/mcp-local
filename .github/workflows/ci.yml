@@ -1,0 +1,34 @@
+name: CI
+
+# Pull-request checks. No app code here, so this is deliberately thin: does
+# .pre-commit-config.yaml pass, is there a secret in the diff, and does every
+# uses: in this repo's own workflows still match its pinned callee's
+# inputs/secrets. Ported from the docs/terraform house pattern -- see
+# docs/interactions/local-mcp-containers.md and docs/AGENTS.md.
+
+on:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    name: pre-commit
+    uses: tnoff/github-workflows/.github/workflows/pre-commit.yml@387bcb8774f6d5c75d7e9ea35003ed1f35ebf7a4
+
+  secrets:
+    name: Scan for secrets
+    uses: tnoff/github-workflows/.github/workflows/trufflehog.yml@387bcb8774f6d5c75d7e9ea35003ed1f35ebf7a4
+
+  # Catches a `uses:` whose inputs or secrets no longer match the pinned
+  # callee -- that mismatch fails the calling workflow at STARTUP with no
+  # check reported and no workflow_run event, so neither this list nor
+  # notify-failure.yml would otherwise see it.
+  contracts:
+    name: Workflow contracts
+    uses: tnoff/github-workflows/.github/workflows/check-workflow-contracts.yml@387bcb8774f6d5c75d7e9ea35003ed1f35ebf7a4

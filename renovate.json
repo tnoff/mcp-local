@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Private repo with no branch ruleset (rulesets need GitHub Pro, and github_repository_ruleset only exists here if it ever goes public -- see infra/repos.tf), so no-automerge is extended last: there's no required check for platform automerge to wait on. Nothing here is deployed by CI -- pin bumps land as PRs and get rebuilt on the laptop by hand.",
+  "extends": [
+    "github>tnoff/github-workflows//renovate/default-github",
+    "github>tnoff/github-workflows//renovate/no-automerge"
+  ],
+  "enabledManagers": ["dockerfile", "github-actions", "pip_requirements", "custom.regex"],
+  "customManagers": [
+    {
+      "description": "images.json's pinned public MCP images -- registry/repo:tag pairs with no Dockerfile of their own.",
+      "customType": "regex",
+      "fileMatch": ["^images\\.json$"],
+      "matchStrings": [
+        "\"(?<depName>[a-z0-9.\\-_/]+):(?<currentValue>[a-zA-Z0-9.\\-_]+)\""
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "description": "backstage-mcp-server/Dockerfile's upstream pin -- upstream ships no releases, so this is a git-refs pin against main, same shape as the terraform-modules pin used fleet-wide.",
+      "customType": "regex",
+      "fileMatch": ["^backstage-mcp-server/Dockerfile$"],
+      "matchStrings": [
+        "ARG BACKSTAGE_MCP_SERVER_REF=(?<currentDigest>[a-f0-9]{40})"
+      ],
+      "datasourceTemplate": "git-refs",
+      "depNameTemplate": "https://github.com/Coderrob/backstage-mcp-server",
+      "currentValueTemplate": "main"
+    },
+    {
+      "description": "oci-mcp/Dockerfile's upstream pin -- same shape as backstage-mcp-server's above, upstream ships no releases either.",
+      "customType": "regex",
+      "fileMatch": ["^oci-mcp/Dockerfile$"],
+      "matchStrings": [
+        "ARG MCP_SERVER_OCI_REF=(?<currentDigest>[a-f0-9]{40})"
+      ],
+      "datasourceTemplate": "git-refs",
+      "depNameTemplate": "https://github.com/jopsis/mcp-server-oci",
+      "currentValueTemplate": "main"
+    }
+  ]
+}
