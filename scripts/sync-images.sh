@@ -56,11 +56,14 @@ echo "   bumping it merges, not on a schedule; there's nothing new otherwise)"
 # -t stdio, which .env file) aren't data this file has any business storing.
 python3 - "${REPO_ROOT}/images.json" <<'PY'
 import json
+import os
 import subprocess
 import sys
 
 with open(sys.argv[1]) as f:
     images = {k: v for k, v in json.load(f).items() if not k.startswith("_")}
+
+mcp_local_dir = os.path.join(os.environ["HOME"], ".mcp-local")
 
 for name, ref in images.items():
     print(f"\n-- {name} --", flush=True)
@@ -69,13 +72,13 @@ for name, ref in images.items():
         print("   To point Claude Code at this pull, close it and run:")
         print("     claude mcp remove github")
         print("     claude mcp add --scope user github -- docker run -i --rm \\")
-        print("       --env-file /home/tnorth/.mcp-local/github/.env \\")
+        print(f"       --env-file {mcp_local_dir}/github/.env \\")
         print(f"       {ref}")
     elif name == "grafana":
         print("   To point Claude Code at this pull, close it and run:")
         print("     claude mcp remove grafana")
         print("     claude mcp add --scope user grafana -- docker run -i --rm --network host \\")
-        print("       --env-file /home/tnorth/.mcp-local/grafana/.env \\")
+        print(f"       --env-file {mcp_local_dir}/grafana/.env \\")
         print(f"       {ref} -t stdio")
     else:
         print(f"   No claude mcp add recipe wired up for '{name}' in this script yet.")
