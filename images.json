@@ -1,5 +1,5 @@
 {
   "_comment": "Pinned public images for the MCP servers that need no local build -- the two that do (kubernetes-mcp-oci, backstage-mcp-server) are tracked by their own Dockerfiles instead. gitlab is deliberately absent: it's retired (see README.md), superseded by a first-party connector, and the container must not be stood back up. Tracked by the customManagers.docker entry in renovate.json. Bumping a tag here does not, by itself, update ~/.claude.json or the running container -- see README.md.",
-  "github": "ghcr.io/github/github-mcp-server:v1.12.1",
+  "github": "ghcr.io/github/github-mcp-server:v1.12.2",
   "grafana": "docker.io/grafana/mcp-grafana:0.17.0"
 }
