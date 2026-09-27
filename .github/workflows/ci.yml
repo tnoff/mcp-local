@@ -32,3 +32,31 @@ jobs:
   contracts:
     name: Workflow contracts
     uses: tnoff/github-workflows/.github/workflows/check-workflow-contracts.yml@f6569d2b6f242fb91759fe0ebfa990a99c09585b
+
+  result:
+    name: CI result
+    # The stable name for the branch ruleset to require (see
+    # docs/projects/mcp-local-registry.md and infra/repos.tf's mcp-local
+    # module). None of the three jobs above are conditional, unlike
+    # backstage's equivalent, so this needs no metadata/changes gating --
+    # it just needs all three and fails if any of them did.
+    if: always()
+    needs: [pre-commit, secrets, contracts]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Summarise
+        run: |
+          echo "pre-commit: ${{ needs.pre-commit.result }}"
+          echo "secrets:    ${{ needs.secrets.result }}"
+          echo "contracts:  ${{ needs.contracts.result }}"
+
+      - name: Fail if any job failed
+        if: >-
+          needs.pre-commit.result == 'failure' || needs.pre-commit.result == 'cancelled' ||
+          needs.secrets.result == 'failure' || needs.secrets.result == 'cancelled' ||
+          needs.contracts.result == 'failure' || needs.contracts.result == 'cancelled'
+        run: |
+          echo "::error::One or more CI jobs did not pass."
+          exit 1
