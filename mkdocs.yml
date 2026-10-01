@@ -5,7 +5,6 @@ nav:
   - Home: README.md
   - Local MCP containers: local-mcp-containers.md
   - OCI MCP: oci-mcp.md
-  - In-cluster MCPs (decommissioned): cluster-mcp.md
 
 plugins:
   - techdocs-core
