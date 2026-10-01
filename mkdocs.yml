@@ -3,6 +3,8 @@ site_description: 'Registry of locally-run MCP server configs (Dockerfiles + pin
 
 nav:
   - Home: README.md
+  - Local MCP containers: local-mcp-containers.md
+  - OCI MCP: oci-mcp.md
 
 plugins:
   - techdocs-core
