@@ -79,7 +79,7 @@ for name, ref in images.items():
         print("     claude mcp remove grafana")
         print("     claude mcp add --scope user grafana -- docker run -i --rm --network host \\")
         print(f"       --env-file {mcp_local_dir}/grafana/.env \\")
-        print(f"       {ref} -t stdio")
+        print(f"       {ref} -t stdio -disable-write")
     else:
         print(f"   No claude mcp add recipe wired up for '{name}' in this script yet.")
 PY

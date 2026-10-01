@@ -53,7 +53,7 @@ if [ -f "${MCP_LOCAL_DIR}/grafana/.env" ]; then
   GRAFANA_REF="$(python3 -c "import json; print(json.load(open('${REPO_ROOT}/images.json'))['grafana'])")"
   register grafana docker run -i --rm --network host \
     --env-file "${MCP_LOCAL_DIR}/grafana/.env" \
-    "${GRAFANA_REF}" -t stdio
+    "${GRAFANA_REF}" -t stdio -disable-write
 else
   skip grafana "no ${MCP_LOCAL_DIR}/grafana/.env -- see README.md's Credentials for each MCP section"
 fi
