@@ -7,9 +7,9 @@
 # for a from-scratch install on 2026-09-21 (mcp itself corrected to the
 # same 1.27.2 release the venv install pins).
 oci==2.186.0
-fastapi==0.141.1
+fastapi==0.142.2
 uvicorn==0.54.0
 click==8.5.0
 pydantic==2.13.5
 loguru==0.7.3
-mcp==1.27.2
+mcp==1.30.0
