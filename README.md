@@ -89,15 +89,30 @@ exceptions, for different reasons explained in their own subsections.
 
 ```
 GRAFANA_URL=http://localhost:3000
-GRAFANA_SERVICE_ACCOUNT_TOKEN=glsa_...     # Viewer-scoped SA token
+GRAFANA_USERNAME=admin
+GRAFANA_PASSWORD=...                       # the grafana-admin-creds password
 ```
 
-The token is the same `glsa_` value the in-cluster `mcp-grafana` Secret
-holds — `kubectl -n monitoring get secret mcp-grafana -o
-jsonpath='{.data.service-account-token}' | base64 -d`. It's
-terraform-managed and on the secret-age tracker, so re-pull it after a
-rotation. `GRAFANA_URL` assumes the OCI bastion keepalive's `:3000`
-port-forward is up — see `docs/interactions/cluster-access.md`.
+Basic auth as the Grafana admin. The password is the one in the
+terraform-managed `grafana-admin-creds` Secret (`monitoring` namespace).
+Grafana seeds the admin account from its environment on a fresh DB, so
+unlike a service-account token this credential survives a Grafana DB reset
+and never needs re-pulling after one. `GRAFANA_URL` assumes the OCI bastion
+keepalive's `:3000` port-forward is up — see
+`docs/interactions/cluster-access.md`.
+
+**The entry is registered with `-disable-write`.** Admin credentials can
+otherwise create and update dashboards, alert rules, datasources and
+annotations through the MCP's write tools. The flag unregisters them, which
+keeps this MCP read-only the way the Viewer-scoped service-account token it
+replaces did. (The flag is `-disable-write` — `mcp-grafana` has no
+`--read-only`.) Don't drop it without a reason.
+
+Alternative: a service-account token instead of the admin password, as
+`GRAFANA_SERVICE_ACCOUNT_TOKEN=glsa_...` (and no username/password lines).
+That was the previous setup, with a Viewer-scoped token pulled from the
+`mcp-grafana` Secret; it goes stale whenever Grafana's DB is reset until the
+`grafana-sa-bootstrap` CronJob re-mints it and you re-pull the value.
 
 ### github
 
