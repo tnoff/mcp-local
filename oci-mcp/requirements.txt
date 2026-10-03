@@ -6,7 +6,7 @@
 # real dependency is pinned here instead, byte-for-byte what pip resolved
 # for a from-scratch install on 2026-09-21 (mcp itself corrected to the
 # same 1.27.2 release the venv install pins).
-oci==2.186.0
+oci==2.187.0
 fastapi==0.142.2
 uvicorn==0.54.0
 click==8.5.0
