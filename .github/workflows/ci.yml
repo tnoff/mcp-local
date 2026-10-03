@@ -19,11 +19,11 @@ permissions:
 jobs:
   pre-commit:
     name: pre-commit
-    uses: tnoff/github-workflows/.github/workflows/pre-commit.yml@ec70d150eae37b43217bcbda3da24cd705da8ac4
+    uses: tnoff/github-workflows/.github/workflows/pre-commit.yml@b1932282111367882be5ad0730eecbe379be3fe0
 
   secrets:
     name: Scan for secrets
-    uses: tnoff/github-workflows/.github/workflows/trufflehog.yml@ec70d150eae37b43217bcbda3da24cd705da8ac4
+    uses: tnoff/github-workflows/.github/workflows/trufflehog.yml@b1932282111367882be5ad0730eecbe379be3fe0
 
   # Catches a `uses:` whose inputs or secrets no longer match the pinned
   # callee -- that mismatch fails the calling workflow at STARTUP with no
@@ -31,7 +31,7 @@ jobs:
   # notify-failure.yml would otherwise see it.
   contracts:
     name: Workflow contracts
-    uses: tnoff/github-workflows/.github/workflows/check-workflow-contracts.yml@ec70d150eae37b43217bcbda3da24cd705da8ac4
+    uses: tnoff/github-workflows/.github/workflows/check-workflow-contracts.yml@b1932282111367882be5ad0730eecbe379be3fe0
 
   result:
     name: CI result
