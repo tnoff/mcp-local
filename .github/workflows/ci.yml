@@ -3,7 +3,8 @@ name: CI
 # Pull-request checks. No app code here, so this is deliberately thin: does
 # .pre-commit-config.yaml pass, is there a secret in the diff, and does every
 # uses: in this repo's own workflows still match its pinned callee's
-# inputs/secrets. Ported from the docs/terraform house pattern -- see
+# inputs/secrets, and do the Dockerfiles that changed still build and scan
+# clean. Ported from the docs/terraform house pattern -- see
 # docs/interactions/local-mcp-containers.md and docs/AGENTS.md.
 
 on:
@@ -33,15 +34,70 @@ jobs:
     name: Workflow contracts
     uses: tnoff/github-workflows/.github/workflows/check-workflow-contracts.yml@adea087c43d56fd13d5b1abf2d5f2ba3e695784d  # check-workflow-contracts-v1.0.0
 
+  # Which of the three Dockerfiles' directories this PR touches, as a matrix.
+  # Only those legs run, to keep PRs fast. A changed requirements.txt or any
+  # other file under a directory counts, since it is all build context.
+  changes:
+    name: Changed images
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    outputs:
+      images: ${{ steps.diff.outputs.images }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
+        with:
+          fetch-depth: 0
+
+      - name: Diff against base
+        id: diff
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          changed=$(git diff --name-only "${BASE_SHA}...${HEAD_SHA}")
+          images=$(for d in backstage-mcp-server kubernetes-mcp-oci oci-mcp; do
+            if grep -q "^${d}/" <<<"${changed}"; then echo "${d}"; fi
+          done | jq -R . | jq -sc .)
+          echo "images=${images}" >> "$GITHUB_OUTPUT"
+          echo "images to build: ${images}"
+
+  # Builds each changed image without pushing and runs TruffleHog on it. The
+  # oci-mcp and backstage images pull third-party source at a pinned commit,
+  # which the source-only scan above never sees.
+  #
+  # linux/amd64 on purpose: unlike the cluster images, these run on the
+  # laptop (x86_64) as `docker run -i --rm` stdio containers, so the
+  # callee's arm64 default would check an image nobody runs.
+  #
+  # Conditional and dynamically named, so these legs are NOT required status
+  # checks; they roll up into `result` below, which is.
+  docker-build-check:
+    name: Build and scan ${{ matrix.image }}
+    needs: changes
+    if: needs.changes.outputs.images != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.changes.outputs.images) }}
+    uses: tnoff/github-workflows/.github/workflows/docker-build-check.yml@adea087c43d56fd13d5b1abf2d5f2ba3e695784d  # docker-build-check-v1.0.0
+    with:
+      context: ${{ matrix.image }}
+      dockerfile: ${{ matrix.image }}/Dockerfile
+      platform: linux/amd64
+      runner_labels: '["ubuntu-26.04"]'
+
   result:
     name: CI result
     # The stable name for the branch ruleset to require (see
     # docs/projects/mcp-local-registry.md and infra/repos.tf's mcp-local
-    # module). None of the three jobs above are conditional, unlike
-    # backstage's equivalent, so this needs no metadata/changes gating --
-    # it just needs all three and fails if any of them did.
+    # module). docker-build-check is conditional (skipped when no Dockerfile
+    # directory changed), so it is rolled up here rather than required
+    # itself; a skipped result passes, only failure/cancelled fails.
     if: always()
-    needs: [pre-commit, secrets, contracts]
+    needs: [pre-commit, secrets, contracts, changes, docker-build-check]
     runs-on: ubuntu-26.04
     permissions:
       contents: read
@@ -51,12 +107,16 @@ jobs:
           echo "pre-commit: ${{ needs.pre-commit.result }}"
           echo "secrets:    ${{ needs.secrets.result }}"
           echo "contracts:  ${{ needs.contracts.result }}"
+          echo "changes:    ${{ needs.changes.result }}"
+          echo "images:     ${{ needs.docker-build-check.result }}"
 
       - name: Fail if any job failed
         if: >-
           needs.pre-commit.result == 'failure' || needs.pre-commit.result == 'cancelled' ||
           needs.secrets.result == 'failure' || needs.secrets.result == 'cancelled' ||
-          needs.contracts.result == 'failure' || needs.contracts.result == 'cancelled'
+          needs.contracts.result == 'failure' || needs.contracts.result == 'cancelled' ||
+          needs.changes.result == 'failure' || needs.changes.result == 'cancelled' ||
+          needs.docker-build-check.result == 'failure' || needs.docker-build-check.result == 'cancelled'
         run: |
           echo "::error::One or more CI jobs did not pass."
           exit 1

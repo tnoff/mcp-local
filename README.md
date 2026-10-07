@@ -9,6 +9,10 @@ credential provisioning is in [docs/oci-mcp.md](docs/oci-mcp.md).
 
 **Nothing here is built or deployed by CI.** A Renovate PR landing a bump is the
 trigger to rebuild by hand and restart Claude Code, not an automated rollout.
+The one exception is a PR check: `ci.yml` builds each changed Dockerfile
+(`linux/amd64`, matching the laptop) without pushing and runs TruffleHog on the
+image. The images actually run are still the ones `sync-images.sh` builds on the
+laptop, so that scan covers the Dockerfiles, not the running artifact.
 
 ## Contents
 
