@@ -36,13 +36,19 @@ secret-rotation page).
 
 - **Upstream's `mcp @ git+main` dependency can be unresolvable.** The package's
   pyproject pulls the MCP Python SDK from git `main` unpinned. That has broken in
-  two ways: the SDK restructuring `mcp.server.fastmcp` (a `ModuleNotFoundError`),
+  two ways: the SDK restructuring `mcp.server.fastmcp` (a `ModuleNotFoundError`, see the next gotcha),
   and upstream's HEAD demanding an unpublished dev snapshot of a sub-dependency so
   that pip could not resolve at all. The Dockerfile therefore installs the package
   `--no-deps` from a pinned commit and pins every real runtime dependency (`mcp`
   included) in `oci-mcp/requirements.txt`, so the build never depends on what
   upstream's git tip resolves to. Renovate tracks the commit pin through a
   `git-refs` customManager.
+- **Upstream imports a module mcp 2.x removed.** `mcp_server_oci` still does
+  `from mcp.server.fastmcp import FastMCP, Context`, but mcp 2.x renamed that to
+  `MCPServer` in `mcp.server.mcpserver` (same `Context`, `@tool` and `run()`
+  APIs). Rather than pin `mcp<2`, the Dockerfile `sed`-patches that one import
+  line after install, and a trailing `grep` fails the build if upstream changes
+  the line. Drop the patch step once upstream migrates.
 - **Broad read scope.** `read all-resources in tenancy` includes IAM metadata,
   audit logs and vault metadata (not secret contents). Narrower per-family
   policies would be tighter but much chattier to maintain; read-all is the
