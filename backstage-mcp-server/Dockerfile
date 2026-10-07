@@ -7,7 +7,7 @@ FROM node:24-slim AS builder
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-ARG BACKSTAGE_MCP_SERVER_REF=5c4b4a80ca0212d08779325ef40da0ddb879cff2
+ARG BACKSTAGE_MCP_SERVER_REF=b25a0ec88c52138c33baac7f5e41e6a6e228aaf1
 RUN git clone https://github.com/Coderrob/backstage-mcp-server.git . \
     && git checkout "${BACKSTAGE_MCP_SERVER_REF}"
 RUN corepack enable && corepack yarn install --immutable
