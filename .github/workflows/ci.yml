@@ -42,7 +42,7 @@ jobs:
     # it just needs all three and fails if any of them did.
     if: always()
     needs: [pre-commit, secrets, contracts]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:
