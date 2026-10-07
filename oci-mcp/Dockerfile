@@ -16,4 +16,11 @@ ARG MCP_SERVER_OCI_REF=1b5e055ad30882838c7923e1be17019fd3355e3e
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir --no-deps "git+https://github.com/jopsis/mcp-server-oci.git@${MCP_SERVER_OCI_REF}"
+# Upstream still imports mcp.server.fastmcp, which mcp 2.x renamed to
+# mcp.server.mcpserver (MCPServer, same Context/tool/run API for what it uses).
+# Patch the one import line so we can track current mcp. The grep fails the
+# build if upstream changes that line, so the patch can't silently no-op.
+RUN f=/usr/local/lib/python3.14/site-packages/mcp_server_oci/mcp_server.py \
+    && sed -i 's/^from mcp\.server\.fastmcp import FastMCP, Context$/from mcp.server.mcpserver import MCPServer as FastMCP, Context/' "$f" \
+    && grep -q "mcp.server.mcpserver" "$f"
 ENTRYPOINT ["mcp-server-oci"]
