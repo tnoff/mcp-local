@@ -1,11 +1,12 @@
 # jopsis/mcp-server-oci's own pyproject pulls `mcp @ git+main` unpinned,
 # which is periodically broken outright -- verified 2026-09-21: pip couldn't
 # even resolve it (an unpublished mcp-types dev snapshot), not just the
-# later fastmcp ModuleNotFoundError docs/interactions/oci-mcp.md documents.
+# later fastmcp ModuleNotFoundError docs/oci-mcp.md documents.
 # So the Dockerfile installs the package itself with --no-deps and every
 # real dependency is pinned here instead, byte-for-byte what pip resolved
-# for a from-scratch install on 2026-09-21 (mcp itself corrected to the
-# same 1.27.2 release the venv install pins).
+# for a from-scratch install on 2026-09-21. mcp is on 2.x; upstream still
+# imports the removed mcp.server.fastmcp, which the Dockerfile patches to
+# mcp.server.mcpserver (see the comment there).
 oci==2.187.1
 fastapi==0.142.2
 uvicorn==0.54.0
