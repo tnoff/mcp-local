@@ -8,7 +8,7 @@
 # imports the removed mcp.server.fastmcp, which the Dockerfile patches to
 # mcp.server.mcpserver (see the comment there).
 oci==2.187.1
-fastapi==0.142.2
+fastapi==0.143.0
 uvicorn==0.54.0
 click==8.5.0
 pydantic==2.14.0
