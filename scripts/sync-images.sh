@@ -85,4 +85,43 @@ for name, ref in images.items():
 PY
 
 echo
+echo "== Cleaning up old images =="
+# Stop containers from closed/suspended sessions first, or they pin the old
+# images and `docker rmi` below skips them.
+"${REPO_ROOT}/scripts/reap-mcp-containers.sh" --kill
+echo
+# Rebuilding <name>:local orphans the previous image as <none>, and bumping a
+# pin leaves the old tag of the same repo behind. Remove both. An image still
+# used by a running container (e.g. a long-lived Claude Code session started
+# before the bump) makes `docker rmi` fail -- that's fine, it's skipped here
+# and goes away on a later run once that session has been restarted.
+docker image prune -f
+python3 - "${REPO_ROOT}/images.json" <<'PY'
+import json
+import subprocess
+import sys
+
+with open(sys.argv[1]) as f:
+    pinned = [v for k, v in json.load(f).items() if not k.startswith("_")]
+
+def normalize(ref):
+    repo, _, tag = ref.rpartition(":")
+    return repo.removeprefix("docker.io/"), tag
+
+keep = {normalize(r) for r in pinned}
+repos = {repo for repo, _ in keep}
+
+out = subprocess.run(
+    ["docker", "images", "--format", "{{.Repository}}:{{.Tag}}"],
+    check=True, capture_output=True, text=True,
+).stdout.split()
+
+for ref in out:
+    repo, tag = normalize(ref)
+    if repo in repos and (repo, tag) not in keep:
+        print(f"-- removing {ref} --", flush=True)
+        subprocess.run(["docker", "rmi", ref], check=False)
+PY
+
+echo
 echo "Done. Restart Claude Code to pick up anything that changed."

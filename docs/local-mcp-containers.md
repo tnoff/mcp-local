@@ -13,6 +13,10 @@ this page is the reference for the design and the gotchas.
   no ports, no long-lived containers. Register them with
   `scripts/register-mcps.sh`, which is the source of truth for the exact
   arguments.
+- **Every Claude Code session gets its own set of all five containers**, started
+  when the session starts and removed when it exits. Four open sessions means
+  twenty containers. They are not shared between sessions, so state (such as an
+  OCI profile switch) does not leak across them.
 - `grafana`, `kubernetes` and `backstage` target in-cluster endpoints, so they run
   `--network host` and reach them over loopback port-forwards.
 - `github` and `oci` go outbound to public APIs (`api.github.com`, OCI's API) and
@@ -95,6 +99,27 @@ config; the fleet's Backstage uses a static token from `terraform-admin`.
 **oci.** See [oci-mcp.md](oci-mcp.md). The one MCP with a scoped credential copy:
 mounting all of `~/.oci` would also hand the less-audited third-party package the
 `DEFAULT` profile.
+
+## Stale containers
+
+A session's containers only go away when that session exits cleanly. A session
+that is suspended (Ctrl-Z and forgotten) or killed uncleanly leaves its five
+containers running, and they pin whatever image tags they started with, so
+`docker rmi` of an old tag fails while they exist.
+
+Each container's `docker run` client is a child of its session's `claude`
+process. [`scripts/reap-mcp-containers.sh`](../scripts/reap-mcp-containers.sh)
+uses that to find containers whose parent is suspended or no longer `claude`:
+
+```bash
+scripts/reap-mcp-containers.sh          # dry run, lists what it would stop
+scripts/reap-mcp-containers.sh --kill   # stop them
+```
+
+`sync-images.sh` runs it with `--kill` before pruning old images. Reaping a
+suspended session leaves it without its MCP servers if you `fg` it later, so
+restart it instead. Live sessions are never touched: they keep running on
+the image tags they started with until you restart them.
 
 ## Gotchas
 

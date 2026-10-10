@@ -22,7 +22,8 @@ laptop, so that scan covers the Dockerfiles, not the running artifact.
 | `backstage-mcp-server/Dockerfile` | `backstage-mcp-server:local`: builds [Coderrob/backstage-mcp-server](https://github.com/Coderrob/backstage-mcp-server) from source at a pinned commit (no upstream image). Renovate tracks the pin via a `git-refs` customManager. |
 | `oci-mcp/Dockerfile` | `oci-mcp:local`: builds [jopsis/mcp-server-oci](https://github.com/jopsis/mcp-server-oci) from a pinned commit; `requirements.txt` pins its runtime dependencies (see [oci-mcp.md](docs/oci-mcp.md)). |
 | `images.json` | Pinned public images with no local build: `github-mcp-server`, `mcp-grafana`. |
-| `scripts/sync-images.sh` | `git pull`, then rebuild the three local images and pull the two pinned ones. |
+| `scripts/sync-images.sh` | `git pull`, rebuild the three local images, pull the two pinned ones, then reap stale containers and remove old images. |
+| `scripts/reap-mcp-containers.sh` | Stop MCP containers left by closed or suspended Claude Code sessions (dry run unless `--kill`). |
 | `scripts/register-mcps.sh` | Run `sync-images.sh`, then `claude mcp add` all five. |
 
 ## Staying up to date
@@ -34,7 +35,10 @@ references, so Claude Code's config does not change) and pulls the two images
 pinned in `images.json`. For those two it prints the `claude mcp add` command to
 run if the pin is newer than what is registered; it never touches
 `~/.claude.json`. Fully restart Claude Code afterward, since MCP config and
-images are read only at startup.
+images are read only at startup. Each Claude Code session runs its own set of
+the five containers, so the script also reaps containers from closed or
+suspended sessions and then removes superseded image tags; see
+[Stale containers](docs/local-mcp-containers.md#stale-containers).
 
 ## Registering with Claude Code
 
