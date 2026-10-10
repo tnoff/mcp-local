@@ -12,7 +12,7 @@
 FROM python:3.14-slim
 RUN apt-get update && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
-ARG MCP_SERVER_OCI_REF=1b5e055ad30882838c7923e1be17019fd3355e3e
+ARG MCP_SERVER_OCI_REF=3d4dbfd78f1e6a8061ae7e20d061832eb46f3cc5
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir --no-deps "git+https://github.com/jopsis/mcp-server-oci.git@${MCP_SERVER_OCI_REF}"
