@@ -11,6 +11,6 @@ oci==2.187.1
 fastapi==0.143.0
 uvicorn==0.54.0
 click==8.5.0
-pydantic==2.14.0
+pydantic==2.14.1
 loguru==0.7.3
 mcp==2.3.0
