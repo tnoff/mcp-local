@@ -9,9 +9,15 @@
 # distribution for the dev snapshot it demanded. requirements.txt pins every
 # real dependency (mcp included) to a version confirmed to work, so the
 # build never depends on what upstream's git HEAD currently resolves to.
-FROM python:3.15-slim
-RUN apt-get update && apt-get install -y --no-install-recommends git \
+#
+# Multi-stage: python:3.15-slim has no prebuilt wheels yet for crc32c and
+# python-pkcs11 (pulled in by oci), so pip compiles them from source. The
+# compiler toolchain stays in the builder stage; only the venv is copied over.
+FROM python:3.15-slim AS builder
+RUN apt-get update && apt-get install -y --no-install-recommends git gcc python3-dev libffi-dev \
     && rm -rf /var/lib/apt/lists/*
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 ARG MCP_SERVER_OCI_REF=3d4dbfd78f1e6a8061ae7e20d061832eb46f3cc5
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
@@ -20,7 +26,11 @@ RUN pip install --no-cache-dir -r requirements.txt \
 # mcp.server.mcpserver (MCPServer, same Context/tool/run API for what it uses).
 # Patch the one import line so we can track current mcp. The grep fails the
 # build if upstream changes that line, so the patch can't silently no-op.
-RUN f=/usr/local/lib/python3.14/site-packages/mcp_server_oci/mcp_server.py \
+RUN f=$(echo /opt/venv/lib/python3.*/site-packages/mcp_server_oci/mcp_server.py) \
     && sed -i 's/^from mcp\.server\.fastmcp import FastMCP, Context$/from mcp.server.mcpserver import MCPServer as FastMCP, Context/' "$f" \
     && grep -q "mcp.server.mcpserver" "$f"
+
+FROM python:3.15-slim
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 ENTRYPOINT ["mcp-server-oci"]
