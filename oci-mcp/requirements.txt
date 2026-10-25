@@ -7,7 +7,7 @@
 # for a from-scratch install on 2026-09-21. mcp is on 2.x; upstream still
 # imports the removed mcp.server.fastmcp, which the Dockerfile patches to
 # mcp.server.mcpserver (see the comment there).
-oci==2.187.2
+oci==2.188.0
 fastapi==0.143.3
 uvicorn==0.54.0
 click==8.5.0
