@@ -10,7 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends git ca-certific
 ARG BACKSTAGE_MCP_SERVER_REF=51b30cdc0bf5d49a2ed8960bcd0311fdb4da1b92
 RUN git clone https://github.com/Coderrob/backstage-mcp-server.git . \
     && git checkout "${BACKSTAGE_MCP_SERVER_REF}"
-RUN corepack enable && corepack yarn install --immutable
+# Node 25+ no longer bundles corepack, so install it before enabling.
+RUN npm install -g corepack && corepack enable && corepack yarn install --immutable
 RUN corepack yarn build
 
 # Dependencies stay external to the rollup bundle (see rollup.config.js
