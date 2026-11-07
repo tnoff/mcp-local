@@ -24,7 +24,7 @@ jobs:
 
   secrets:
     name: Scan for secrets
-    uses: tnoff/github-workflows/.github/workflows/trufflehog.yml@b7790887a768e86127e2b6a29ed06631c947972f  # trufflehog-v1.0.1
+    uses: tnoff/github-workflows/.github/workflows/trufflehog.yml@717d50d682ec44c1e8a7b73e18f12a90735cc4d8  # trufflehog-v1.0.2
 
   # Catches a `uses:` whose inputs or secrets no longer match the pinned
   # callee -- that mismatch fails the calling workflow at STARTUP with no
